@@ -18,8 +18,8 @@ class Insurance(models.Model):
         return self.name
 
 class Invest_insure(models.Model):
-    invest = models.ForeignKey(User, on_delete=models.CASCADE, related_name='%(class)s_requests_created') # on_delete for when artist is deleted then it's song is deleted too
-    insure = models.ForeignKey(Insurance, on_delete=models.CASCADE, related_name='%(class)s_requests_created')
+    invest = models.ForeignKey(User, on_delete=models.CASCADE, related_name='users_invest_insure') # on_delete for when artist is deleted then it's song is deleted too
+    insure = models.ForeignKey(Insurance, on_delete=models.CASCADE, related_name='insures_invest_insure')
     cost = models.FloatField(default=0)
     revenue = models.FloatField(default=0)
 
@@ -27,8 +27,8 @@ class Invest_insure(models.Model):
         return 'invest'
     
 class User_insure(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='%(class)s_requests_created') # on_delete for when artist is deleted then it's song is deleted too
-    insure = models.ForeignKey(Insurance, on_delete=models.CASCADE, related_name='%(class)s_requests_created')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='users_user_insure') # on_delete for when artist is deleted then it's song is deleted too
+    insure = models.ForeignKey(Insurance, on_delete=models.CASCADE, related_name='insures_user_insure')
     date_buy = models.DateField()
 
     def __str__(self):
