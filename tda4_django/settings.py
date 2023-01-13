@@ -78,13 +78,23 @@ WSGI_APPLICATION = 'tda4_django.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'tda4',
+#         'USER':'tda4user',
+#         'PASSWORD':'tda4',
+#         'HOST':'localhost'
+#     }
+# }
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'tda4',
-        'USER':'tda4user',
-        'PASSWORD':'tda4',
-        'HOST':'localhost'
+        'NAME': 'maharnnop/tda4-db',
+        'USER': 'maharnnop',
+        'PASSWORD': 'v2_3xxML_vZY367uXZMsTCK5kFGbea3e',
+        'HOST': 'db.bit.io',
+        'PORT': '5432',
     }
 }
 
