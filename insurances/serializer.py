@@ -23,13 +23,11 @@ class InsuranceSerialier(serializers.HyperlinkedModelSerializer):
 class InvestInsureSerialier(serializers.HyperlinkedModelSerializer):
     invest = serializers.HyperlinkedRelatedField(
         view_name='user_detail',
-        read_only=True,
-
+        read_only=True
     )
     invest_id = serializers.PrimaryKeyRelatedField(
         queryset = User.objects.all(),
-        source ='user',
-        # many=True
+        source ='invest'
     )
     insure = serializers.HyperlinkedRelatedField(
         view_name='insure_detail',
@@ -37,18 +35,12 @@ class InvestInsureSerialier(serializers.HyperlinkedModelSerializer):
     )
     insure_id = serializers.PrimaryKeyRelatedField(
         queryset = Insurance.objects.all(),
-        source ='insure',
-        # many=True
+        source ='insure'
     )
-
-    # artist_id = serializers.PrimaryKeyRelatedField(
-    #     queryset = Artist.objects.all(),
-    #     source ='artist'
-    # )
 
     class Meta:
         model = Invest_insure
-        fields =( 'id','invest','invest_id','insure_id','insure','cost','revenue')
+        fields =( 'id','invest','invest_id','insure','insure_id','cost','revenue')
 
 
 class UserInsureSerialier(serializers.HyperlinkedModelSerializer):
@@ -66,7 +58,7 @@ class UserInsureSerialier(serializers.HyperlinkedModelSerializer):
     )
     insure_id = serializers.PrimaryKeyRelatedField(
         queryset = Insurance.objects.all(),
-        source ='user'
+        source ='insure'
     )
     # artist_id = serializers.PrimaryKeyRelatedField(
     #     queryset = Artist.objects.all(),
