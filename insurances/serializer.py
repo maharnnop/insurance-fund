@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Insurance,Invest_insure,User_insure
+from rest_framework.request import Request
 from accounts.models import User
 
 class InsuranceSerialier(serializers.HyperlinkedModelSerializer):
@@ -37,7 +38,6 @@ class InvestInsureSerialier(serializers.HyperlinkedModelSerializer):
         queryset = Insurance.objects.all(),
         source ='insure'
     )
-
     class Meta:
         model = Invest_insure
         fields =( 'id','invest','invest_id','insure','insure_id','cost','revenue')
