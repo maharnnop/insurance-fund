@@ -22,7 +22,7 @@ class Invest_insure(models.Model):
     insure = models.ForeignKey(Insurance, on_delete=models.CASCADE, related_name='insures_invest_insure')
     cost = models.FloatField(default=0)
     revenue = models.FloatField(default=0)
-
+    # object =CustomUserManager()
     def __str__(self):
         return 'invest'
     
@@ -30,7 +30,7 @@ class User_insure(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='users_user_insure') # on_delete for when artist is deleted then it's song is deleted too
     insure = models.ForeignKey(Insurance, on_delete=models.CASCADE, related_name='insures_user_insure')
     date_buy = models.DateField()
-
+    # object =CustomUserManager()
     def __str__(self):
         return 'user'
     
