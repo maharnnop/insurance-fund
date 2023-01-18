@@ -26,8 +26,12 @@ class InsuranceCreate(generics.CreateAPIView):
     serializer_class = InsuranceSerialier
 
 
-class InsuranceDetail(generics.RetrieveUpdateDestroyAPIView):
+class InsuranceDetail(generics.RetrieveAPIView):
+    permission_classes = []
+    queryset = Insurance.objects.all()
+    serializer_class = InsuranceSerialier
 
+class InsuranceUpdate_Del(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAdminUser]
     queryset = Insurance.objects.all()
     serializer_class = InsuranceSerialier
@@ -64,7 +68,7 @@ class UserInsureList(APIView):
     def post(self, request, *args, **kwargs):
         header = request.headers['Authorization'].split(' ')[1]
         user_id = jwt.decode(header, settings.SECRET_KEY)['user_id']
-        if request.data['invest_id'] == user_id:
+        if request.data['user_id'] == user_id:
             form = UserInsureSerialier(data=request.data)
             if form.is_valid():
                 form.save()
@@ -75,7 +79,7 @@ class UserInsureList(APIView):
     def get(self, request, *args, **kwargs):
         header = request.headers['Authorization'].split(' ')[1]
         user_id = jwt.decode(header, settings.SECRET_KEY)['user_id']
-        queryset = User_insure.objects.filter(invest_id=user_id).values()
+        queryset = User_insure.objects.filter(user_id=user_id).values()
         return Response((queryset, {'user_id': user_id}))
 
 
@@ -114,11 +118,45 @@ class InvestInsureDetail(generics.RetrieveUpdateDestroyAPIView):
             return Response({f'message : delete id:{pk} successful'})
         else:
             return Response({'massage : update only own data',invest_id}, status=status.HTTP_400_BAD_REQUEST)
-    # def update(self, request, *args, **kwargs):
-    #     return super().update(request, *args, **kwargs)
+  
 
+# class UserInsureGet(generics.RetrieveAPIView):
 
 class UserInsureDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
     queryset = User_insure.objects.all()
     serializer_class = UserInsureSerialier
+
+    # def get(self, request, *args, **kwargs):
+    #     pk = self.kwargs.get('pk')
+    #     queryset = User_insure.objects.get(id=pk)
+    #     form = UserInsureSerialier(instance=queryset)
+    #     # form.is_valid()
+    #     return Response(form.data)
+    #     # return Response(form.d)
+
+    def update(self, request, *args, **kwargs):
+        header = request.headers['Authorization'].split(' ')[1]
+        user_id = jwt.decode(header, settings.SECRET_KEY)['user_id']
+        pk = self.kwargs.get('pk')
+        old = User_insure.objects.get(id=pk)
+        if request.data['user_id'] == user_id:
+            form = UserInsureSerialier(data=request.data, instance=old)
+            if form.is_valid():
+                old = form.save()
+                # update_fund()
+            return Response(({'message : update successful'}, request.data))
+        else:
+            return Response({'massage : update only own data'}, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, *args, **kwargs):
+        header = request.headers['Authorization'].split(' ')[1]
+        user_id = jwt.decode(header, settings.SECRET_KEY)['user_id']
+        pk = self.kwargs.get('pk')
+        req_id  = User_insure.objects.get(id=pk).invest_id
+        if req_id == user_id:
+            User_insure.objects.get(id=pk).delete()
+            # update_fund()
+            return Response({f'message : delete id:{pk} successful'})
+        else:
+            return Response({'massage : update only own data',invest_id}, status=status.HTTP_400_BAD_REQUEST)

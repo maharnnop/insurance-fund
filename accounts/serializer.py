@@ -2,18 +2,20 @@ from rest_framework import serializers
 from .models import User
 from rest_framework.validators import ValidationError
 from rest_framework.authtoken.models import Token
-
+from insurances.serializer import UserInsureSerialier,InvestInsureSerialier
 class UserSerialier(serializers.HyperlinkedModelSerializer):
-    users_invest_insure = serializers.HyperlinkedRelatedField(
-        view_name='invest_insure_detail',
-        many=True,  # one - to many relationship
-        read_only=True
-    )
-    users_user_insure = serializers.HyperlinkedRelatedField(
-        view_name='user_insure_detail',
-        many=True,  # one - to many relationship
-        read_only=True
-    )
+    # users_invest_insure = serializers.HyperlinkedRelatedField(
+    #     view_name='invest_insure_detail',
+    #     many=True,  # one - to many relationship
+    #     read_only=True
+    # )
+    users_user_insure = UserInsureSerialier(many=True, read_only=True)
+    users_invest_insure = InvestInsureSerialier(many=True, read_only=True)
+    # users_user_insure = serializers.HyperlinkedRelatedField(
+    #     view_name='user_insure_detail',
+    #     many=True,  # one - to many relationship
+    #     read_only=True
+    # )
     
     class Meta:
         model = User
