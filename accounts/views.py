@@ -11,7 +11,8 @@ from django.core import serializers
 from django.contrib.auth import authenticate
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 # from rest_framework_simplejwt.utils import simplejwt_decode_handler\
 import jwt
 # from rest_framework_jwt.utils import jwt_decode_handler
@@ -21,7 +22,7 @@ User = get_user_model()
 def create_jwt(user: User):
     refresh = RefreshToken.for_user(user)
 
-    tokens = {"access": str(refresh.access_token), "refresh": str(refresh)}
+    tokens = {"access": str(refresh.access_token), "refresh": str(refresh), 'username':user.username}
 
     return tokens
 
@@ -31,13 +32,13 @@ class SignUpView(generics.CreateAPIView):
    
    def post(self, request: Request):
         data = request.data
-
         serializer = self.serializer_class(data=data)
 
         if serializer.is_valid():
             serializer.save()
-            tokens = create_jwt(data)
-            response = {"message": "User Created Successfully", "data": serializer.data,"tokens":tokens}
+            user =User.objects.get(username = serializer.data['username'])
+            token = create_jwt(user)
+            response = {"message": "User Created Successfully", "token":token}
 
             return Response(data=response, status=status.HTTP_201_CREATED)
 
@@ -58,12 +59,12 @@ class LoginView(APIView):
             decoded_payload = jwt.decode(tokens['access'], settings.SECRET_KEY)
 
             response = {"message": "Login Successfull", 
-            "tokens": tokens,
+            "token": tokens,
             "decode":decoded_payload}
             return Response(data=response, status=status.HTTP_200_OK)
 
         else:
-            return Response(data={"message": "Invalid email or password"})
+            return Response(data={"message": "Invalid username or password"},status=status.HTTP_409_BAD_REQUEST)
 
     def get(self, request: Request):
         content = {"user": str(request.user), "auth": str(request.auth)}
