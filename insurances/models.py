@@ -23,6 +23,8 @@ class Invest_insure(models.Model):
     cost = models.FloatField(default=0)
     revenue = models.FloatField(default=0)
     # object =CustomUserManager()
+    class Meta:
+        unique_together = ('invest', 'insure')
     def __str__(self):
         return 'invest'
     
@@ -31,7 +33,10 @@ class User_insure(models.Model):
     insure = models.ForeignKey(Insurance, on_delete=models.CASCADE, related_name='insures_user_insure')
     date_buy = models.DateField()
     # object =CustomUserManager()
+    class Meta:
+        unique_together = ('user', 'insure')
     def __str__(self):
         return 'user'
+
     
     
