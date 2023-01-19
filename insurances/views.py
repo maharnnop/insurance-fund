@@ -10,9 +10,10 @@ from rest_framework.views import APIView
 from django.db.models import Subquery, OuterRef,Sum,Value,IntegerField
 from django.db.models.functions import Cast, Coalesce
 
-def update_fund():
-    total_cost = Invest_insure.objects.values("insure_id").annotate(sum=Sum('cost'))
-    Insurance.objects.update(fund=Subquery(total_cost.filter(insure_id=OuterRef('id')).values('sum')))
+def update_fund(insure_id):
+    total_cost = Invest_insure.objects.filter(insure_id=insure_id).aggregate(Sum('cost'))
+    # Insurance.objects.update(fund=Subquery(total_cost.filter(insure_id=OuterRef('id')).values('sum')))
+    Insurance.objects.filter(id=insure_id).update(fund=total_cost['cost__sum'])
 
 class InsuranceList(generics.ListAPIView):
     permission_classes = []
@@ -43,12 +44,12 @@ class InvestInsureList(APIView):
     def post(self, request, *args, **kwargs):
         header = request.headers['Authorization'].split(' ')[1]
         user_id = jwt.decode(header, settings.SECRET_KEY)['user_id']
-        # return super().post(request, *args, **kwargs)
+        invest = request.data
         if request.data['invest_id'] == user_id:
-            form = InvestInsureSerialier(data=request.data)
-            if form.is_valid():
-                form.save()
-            update_fund()
+            serializer = InvestInsureSerialier(data=invest)
+            if serializer.is_valid():
+                invest_saved = serializer.save()
+                update_fund(invest.insure_id)
             return Response(({'message : create successful'}, request.data))
         else:
             return Response({'massage : crate only own data'}, status=status.HTTP_400_BAD_REQUEST)
@@ -85,25 +86,25 @@ class UserInsureList(APIView):
 
 class InvestInsureDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
-    # queryset = Invest_insure.objects.all()
     serializer_class = InvestInsureSerialier
 
     def get(self, request, *args, **kwargs):
         pk = self.kwargs.get('pk')
         queryset = Invest_insure.objects.filter(id=pk).values()
         return Response(queryset)
-
-    def update(self, request, *args, **kwargs):
+  
+    def patch(self, request, *args, **kwargs):
         header = request.headers['Authorization'].split(' ')[1]
         user_id = jwt.decode(header, settings.SECRET_KEY)['user_id']
         pk = self.kwargs.get('pk')
-        old = Invest_insure.objects.get(id=pk)
+        saved_invest = Invest_insure.objects.get(id=pk)
+        data = request.data
+        serializer = InvestInsureSerialier(instance=saved_invest, data=data,partial=True)
         if request.data['invest_id'] == user_id:
-            form = InvestInsureSerialier(data=request.data, instance=old)
-            if form.is_valid():
-                old = form.save()
-                update_fund()
-            return Response(({'message : update successful'}, request.data))
+            if serializer.is_valid():
+                invest_saved = serializer.save()
+                update_fund(saved_invest.insure_id)
+            return Response(({'message : update successful'}))
         else:
             return Response({'massage : update only own data'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -114,7 +115,7 @@ class InvestInsureDetail(generics.RetrieveUpdateDestroyAPIView):
         invest_id  = Invest_insure.objects.get(id=pk).invest_id
         if invest_id == user_id:
             Invest_insure.objects.get(id=pk).delete()
-            update_fund()
+            # update_fund()
             return Response({f'message : delete id:{pk} successful'})
         else:
             return Response({'massage : update only own data',invest_id}, status=status.HTTP_400_BAD_REQUEST)
@@ -147,21 +148,7 @@ class UserInsureDetail(generics.RetrieveUpdateDestroyAPIView):
             return Response(serializer.data)
         else:
             return Response({'massage : update only own data'}, status=status.HTTP_400_BAD_REQUEST)
-
-    # def update(self, request, *args, **kwargs):
-    #     header = request.headers['Authorization'].split(' ')[1]
-    #     user_id = jwt.decode(header, settings.SECRET_KEY)['user_id']
-    #     pk = self.kwargs.get('pk')
-    #     old = User_insure.objects.get(id=pk)
-    #     if request.data['user_id'] == user_id:
-    #         form = UserInsureSerialier(data=request.data, instance=old)
-    #         if form.is_valid():
-    #             old = form.save()
-    #             # update_fund()
-    #         return Response(({'message : update successful'}, request.data))
-    #     else:
-    #         return Response({'massage : update only own data'}, status=status.HTTP_400_BAD_REQUEST)
-
+   
     def delete(self, request, *args, **kwargs):
         header = request.headers['Authorization'].split(' ')[1]
         user_id = jwt.decode(header, settings.SECRET_KEY)['user_id']

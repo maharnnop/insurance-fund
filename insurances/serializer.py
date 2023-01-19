@@ -21,6 +21,12 @@ class InvestInsureSerialier(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Invest_insure
         fields =( 'id','invest_id','insure','insure_id','cost','revenue')
+    def create(self, validated_data):
+        return Invest_insure.objects.create(**validated_data)
+    def update(self, instance, validated_data):
+        instance.cost = validated_data.get('cost',instance.cost)
+        instance.save()
+        return instance
 
 
 class UserInsureSerialier(serializers.HyperlinkedModelSerializer):
