@@ -14,6 +14,10 @@ def update_fund(insure_id):
     total_cost = Invest_insure.objects.filter(insure_id=insure_id).aggregate(Sum('cost'))
     # Insurance.objects.update(fund=Subquery(total_cost.filter(insure_id=OuterRef('id')).values('sum')))
     Insurance.objects.filter(id=insure_id).update(fund=total_cost['cost__sum'])
+    qureyset = Insurance.objects.filter(id=insure_id).values_list('fund','init_fund')
+    # if qureyset[0]['fund'] >= qureyset[0]['init_fund']:
+    if qureyset[0][0] >= qureyset[0][1]:
+        Insurance.objects.filter(id=insure_id).update(release=True)
 
 class InsuranceList(generics.ListAPIView):
     permission_classes = []
@@ -49,7 +53,7 @@ class InvestInsureList(APIView):
             serializer = InvestInsureSerialier(data=invest)
             if serializer.is_valid():
                 invest_saved = serializer.save()
-                update_fund(invest.insure_id)
+                update_fund(invest['insure_id'])
             return Response(({'message : create successful'}, request.data))
         else:
             return Response({'massage : crate only own data'}, status=status.HTTP_400_BAD_REQUEST)
