@@ -7,7 +7,7 @@ from django.conf import settings
 from rest_framework.response import Response
 from django.core import serializers
 from rest_framework.views import APIView
-from django.db.models import Subquery, OuterRef,Sum,Value,IntegerField
+from django.db.models import Subquery, OuterRef,Sum,F
 from django.db.models.functions import Cast, Coalesce
 
 def update_fund(insure_id):
@@ -18,6 +18,12 @@ def update_fund(insure_id):
     # if qureyset[0]['fund'] >= qureyset[0]['init_fund']:
     if qureyset[0][0] >= qureyset[0][1]:
         Insurance.objects.filter(id=insure_id).update(release=True)
+
+def update_rev(insure_id):
+    total_cost = Invest_insure.objects.filter(insure_id=insure_id).aggregate(Sum('cost'))
+    premium = Insurance.objects.filter(id=insure_id).values_list('premium')[0][0]
+    old = Invest_insure.objects.filter(id=OuterRef('id'))
+    Invest_insure.objects.filter(insure_id=insure_id).update(revenue=F('revenue')+F('cost')*premium/total_cost['cost__sum'])
 
 class InsuranceList(generics.ListAPIView):
     permission_classes = []
@@ -76,6 +82,7 @@ class UserInsureList(APIView):
         if request.data['user_id'] == user_id:
             form = UserInsureSerialier(data=request.data)
             if form.is_valid():
+                update_rev(request.data['insure_id'])
                 form.save()
                 return Response(({'message : create successful'}, request.data))
         else:
